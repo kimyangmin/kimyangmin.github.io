@@ -50,7 +50,7 @@
             font-size: 13px; 
             color: #555; 
         }
-        input[type="time"], input[type="number"], select { 
+        input[type="time"], input[type="number"], input[type="text"], select { 
             width: 100%; 
             padding: 10px; 
             box-sizing: border-box; 
@@ -129,9 +129,7 @@
     <button class="btn-reset" onclick="clearData()">데이터 초기화</button>
 
     <script>
-        // 전반전 및 후반전 총 20팀 리스트
         const teams = [
-            // 전반전
             { id: "1-1", name: "미라클 나인(성일고)" },
             { id: "1-2", name: "EDEN(성일정보고)" },
             { id: "1-3", name: "악마의 래핑(성일고)" },
@@ -142,7 +140,6 @@
             { id: "1-8", name: "SPR 홍보동아리(성일정보고)" },
             { id: "1-9", name: "DREAM(성일정보고)" },
             { id: "1-10", name: "야르티스(성일고)" },
-            // 후반전
             { id: "2-1", name: "ZEST(성일정보고)" },
             { id: "2-2", name: "OKASHII(성일정보고)" },
             { id: "2-3", name: "야차(성일고)" },
@@ -155,7 +152,6 @@
             { id: "2-10", name: "찬조팀(외부)" }
         ];
 
-        // UI 생성
         const container = document.getElementById('stage-list');
 
         let currentSection = "";
@@ -209,6 +205,9 @@
                     <option value="조용함" ${saved.latency === '조용함' ? 'selected' : ''}>조용함</option>
                 </select>
                 
+                <label>비고</label>
+                <input type="text" id="memo-${team.id}" placeholder="특이사항 입력" value="${saved.memo || ''}">
+                
                 <div class="btn-group">
                     <button class="btn-save" onclick="saveTeam('${team.id}', '${team.name}')">저장</button>
                 </div>
@@ -216,34 +215,26 @@
             container.appendChild(card);
         });
 
-        // 시간 단위를 분 단위 숫자로 바꾸는 헬퍼 함수
         function timeToMinutes(timeStr) {
             if (!timeStr) return null;
             const [hrs, mins] = timeStr.split(':').map(Number);
             return hrs * 60 + mins;
         }
 
-        // 시간 입력 변화 감지 로직
         function handleTimeInput(id) {
             const index = teams.findIndex(t => t.id === id);
             if (index === -1) return;
 
-            // 1. 현재 팀의 시작 시간이 바뀌었을 때 -> 현재 팀의 대기 시간 갱신
             calculateWaitTime(index);
-
-            // 2. 현재 팀의 종료 시간이 바뀌었을 때 -> 다음 팀의 대기 시간 갱신
             calculateWaitTime(index + 1);
         }
 
-        // 대기 시간 자동 계산 수행 함수
         function calculateWaitTime(targetIndex) {
-            // 첫 번째 팀이거나 리스트 범위를 벗어나면 계산할 앞 팀이 없으므로 무시
             if (targetIndex <= 0 || targetIndex >= teams.length) return;
 
             const currentTeam = teams[targetIndex];
             const prevTeam = teams[targetIndex - 1];
 
-            // 전반전과 후반전이 서로 독립적이어야 하므로 구분 코드가 다르면 계산하지 않음
             const currentPart = currentTeam.id.split('-')[0];
             const prevPart = prevTeam.id.split('-')[0];
             if (currentPart !== prevPart) return;
@@ -251,14 +242,12 @@
             const prevEndStr = document.getElementById(`end-${prevTeam.id}`).value;
             const currentStartStr = document.getElementById(`start-${currentTeam.id}`).value;
 
-            // 앞 팀의 종료 시간과 현재 팀의 시작 시간이 모두 입력되어 있을 때만 계산
             if (prevEndStr && currentStartStr) {
                 const prevMins = timeToMinutes(prevEndStr);
                 const currentMins = timeToMinutes(currentStartStr);
 
                 if (prevMins !== null && currentMins !== null) {
                     const diff = currentMins - prevMins;
-                    // 계산된 값을 대기 시간 칸에 입력 (유저가 원하면 언제든 수정 가능)
                     document.getElementById(`wait-${currentTeam.id}`).value = diff;
                 }
             }
@@ -275,7 +264,8 @@
                 waitTime: document.getElementById(`wait-${id}`).value,
                 overhead: overhead,
                 convoy: document.getElementById(`convoy-${id}`).value,
-                latency: document.getElementById(`latency-${id}`).value
+                latency: document.getElementById(`latency-${id}`).value,
+                memo: document.getElementById(`memo-${id}`).value
             };
 
             localStorage.setItem(id, JSON.stringify(data));
@@ -316,11 +306,12 @@
             jsonAnchor.remove();
 
             let csvContent = "\uFEFF";
-            csvContent += "팀이름,시작시간,종료시간,대기시간(분),오버헤드원인,호위효과,레이턴시\n";
+            csvContent += "팀이름,시작시간,종료시간,대기시간(분),오버헤드원인,호위효과,레이턴시,비고\n";
 
             allData.forEach(row => {
                 const overheadStr = row.overhead.join("|");
-                csvContent += `"${row.teamName}","${row.startTime}","${row.endTime}","${row.waitTime}","${overheadStr}","${row.convoy}","${row.latency}"\n`;
+                const memoStr = row.memo ? row.memo.replace(/"/g, '""') : "";
+                csvContent += `"${row.teamName}","${row.startTime}","${row.endTime}","${row.waitTime}","${overheadStr}","${row.convoy}","${row.latency}","${memoStr}"\n`;
             });
 
             const csvString = "data:text/csv;charset=utf-8," + encodeURIComponent(csvContent);
