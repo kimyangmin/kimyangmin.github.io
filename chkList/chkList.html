@@ -178,13 +178,13 @@
                 <h3>${team.name}</h3>
                 
                 <label>시작 시각</label>
-                <input type="time" id="start-${team.id}" value="${saved.startTime || ''}">
+                <input type="time" id="start-${team.id}" value="${saved.startTime || ''}" oninput="handleTimeInput('${team.id}')">
                 
                 <label>종료 시각</label>
-                <input type="time" id="end-${team.id}" value="${saved.endTime || ''}">
+                <input type="time" id="end-${team.id}" value="${saved.endTime || ''}" oninput="handleTimeInput('${team.id}')">
                 
                 <label>대기 시간 (분)</label>
-                <input type="number" id="wait-${team.id}" placeholder="이전 팀 종료 후 갭" value="${saved.waitTime || ''}">
+                <input type="number" id="wait-${team.id}" placeholder="자동 계산됨 (수정 가능)" value="${saved.waitTime || ''}">
                 
                 <label>오버헤드 원인</label>
                 <div class="checkbox-group">
@@ -215,6 +215,54 @@
             `;
             container.appendChild(card);
         });
+
+        // 시간 단위를 분 단위 숫자로 바꾸는 헬퍼 함수
+        function timeToMinutes(timeStr) {
+            if (!timeStr) return null;
+            const [hrs, mins] = timeStr.split(':').map(Number);
+            return hrs * 60 + mins;
+        }
+
+        // 시간 입력 변화 감지 로직
+        function handleTimeInput(id) {
+            const index = teams.findIndex(t => t.id === id);
+            if (index === -1) return;
+
+            // 1. 현재 팀의 시작 시간이 바뀌었을 때 -> 현재 팀의 대기 시간 갱신
+            calculateWaitTime(index);
+
+            // 2. 현재 팀의 종료 시간이 바뀌었을 때 -> 다음 팀의 대기 시간 갱신
+            calculateWaitTime(index + 1);
+        }
+
+        // 대기 시간 자동 계산 수행 함수
+        function calculateWaitTime(targetIndex) {
+            // 첫 번째 팀이거나 리스트 범위를 벗어나면 계산할 앞 팀이 없으므로 무시
+            if (targetIndex <= 0 || targetIndex >= teams.length) return;
+
+            const currentTeam = teams[targetIndex];
+            const prevTeam = teams[targetIndex - 1];
+
+            // 전반전과 후반전이 서로 독립적이어야 하므로 구분 코드가 다르면 계산하지 않음
+            const currentPart = currentTeam.id.split('-')[0];
+            const prevPart = prevTeam.id.split('-')[0];
+            if (currentPart !== prevPart) return;
+
+            const prevEndStr = document.getElementById(`end-${prevTeam.id}`).value;
+            const currentStartStr = document.getElementById(`start-${currentTeam.id}`).value;
+
+            // 앞 팀의 종료 시간과 현재 팀의 시작 시간이 모두 입력되어 있을 때만 계산
+            if (prevEndStr && currentStartStr) {
+                const prevMins = timeToMinutes(prevEndStr);
+                const currentMins = timeToMinutes(currentStartStr);
+
+                if (prevMins !== null && currentMins !== null) {
+                    const diff = currentMins - prevMins;
+                    // 계산된 값을 대기 시간 칸에 입력 (유저가 원하면 언제든 수정 가능)
+                    document.getElementById(`wait-${currentTeam.id}`).value = diff;
+                }
+            }
+        }
 
         function saveTeam(id, name) {
             const overheadCheckboxes = document.querySelectorAll(`.overhead-${id}:checked`);
@@ -284,15 +332,13 @@
             csvAnchor.remove();
         }
 
-        // 데이터 초기화 기능
         function clearData() {
             if (confirm("정말 모든 데이터를 초기화하시겠습니까?\n이 작업은 되돌릴 수 없습니다.")) {
-                // 팀 ID에 해당하는 데이터만 삭제 (다른 로컬스토리지 데이터 보호)
                 teams.forEach(team => {
                     localStorage.removeItem(team.id);
                 });
                 alert("데이터가 완전히 초기화되었습니다.");
-                location.reload(); // 화면 새로고침하여 빈 칸으로 복구
+                location.reload();
             }
         }
     </script>
