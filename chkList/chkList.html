@@ -7,13 +7,14 @@
     <style>
         body { font-family: sans-serif; padding: 15px; background: #f5f5f5; }
         .card { background: white; padding: 15px; margin-bottom: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        h3 { margin-top: 0; color: #333; }
+        h3 { margin-top: 0; color: #333; font-size: 16px; }
+        .section-title { background: #3f51b5; color: white; padding: 10px; border-radius: 4px; text-align: center; margin: 20px 0 10px 0; }
         label { display: block; margin: 8px 0 4px; font-weight: bold; font-size: 14px; }
         input, select { width: 100%; padding: 8px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; }
         .btn-group { margin-top: 15px; display: flex; gap: 10px; }
         button { flex: 1; padding: 10px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; }
         .btn-save { background: #4CAF50; color: white; }
-        .btn-download { background: #2196F3; color: white; padding: 15px; font-size: 16px; width: 100%; margin-bottom: 20px; }
+        .btn-download { background: #2196F3; color: white; padding: 15px; font-size: 16px; width: 100%; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.2); }
         .checkbox-group { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
         .checkbox-group label { font-weight: normal; }
     </style>
@@ -26,20 +27,50 @@
     <div id="stage-list"></div>
 
     <script>
-        // 앞서 정리된 공연 팀 리스트
+        // 전반전 및 후반전 총 20팀 리스트
         const teams = [
-            { id: "1-1", name: "전반 1. 미라클 나인 (성일고)" },
-            { id: "1-2", name: "전반 2. EDEN (성일정보고)" },
-            { id: "1-3", name: "전반 3. 악마의 래핑 (성일고)" },
-            { id: "2-1", name: "후반 1. ZEST (성일정보고)" },
-            { id: "2-2", name: "후반 2. OKASHII (성일정보고)" }
-            // ... 나머지 팀도 동일한 형식으로 추가 가능
+            // 전반전
+            { id: "1-1", name: "전반 1. 미라클 나인(성일고)" },
+            { id: "1-2", name: "전반 2. EDEN(성일정보고)" },
+            { id: "1-3", name: "전반 3. 악마의 래핑(성일고)" },
+            { id: "1-4", name: "전반 4. 창마와 트와이스(성일정보고)" },
+            { id: "1-5", name: "전반 5. 오진대(성일정보고)" },
+            { id: "1-6", name: "전반 6. 섹시킹 프리미나(성일고)" },
+            { id: "1-7", name: "전반 7. 진리 정의 애국(성일고)" },
+            { id: "1-8", name: "전반 8. SPR 홍보동아리(성일정보고)" },
+            { id: "1-9", name: "전반 9. DREAM(성일정보고)" },
+            { id: "1-10", name: "전반 10. 야르티스(성일고)" },
+            // 후반전
+            { id: "2-1", name: "후반 1. ZEST(성일정보고)" },
+            { id: "2-2", name: "후반 2. OKASHII(성일정보고)" },
+            { id: "2-3", name: "후반 3. 야차(성일고)" },
+            { id: "2-4", name: "후반 4. 우리집 정수기(성일정보고)" },
+            { id: "2-5", name: "후반 5. 잘못된 만남(성일고&성일정보고)" },
+            { id: "2-6", name: "후반 6. 트리케라톱스(성일고)" },
+            { id: "2-7", name: "후반 7. 스몰 뱅(성일고)" },
+            { id: "2-8", name: "후반 8. 회계 사이에 피어난 금융(성일정보고)" },
+            { id: "2-9", name: "후반 9. LET ME DANCE(LMD)(성일정보고)" },
+            { id: "2-10", name: "후반 10. 찬조팀(외부)" }
         ];
 
         // UI 생성
         const container = document.getElementById('stage-list');
+        
+        // 전반전/후반전 구분 타이틀 추가를 위한 변수
+        let currentSection = "";
+
         teams.forEach(team => {
-            // 기존에 저장된 데이터가 있는지 확인
+            // 전반/후반 구분선 추가
+            const section = team.name.includes("전반") ? "⚽ 전반전" : "⚽ 후반전";
+            if (currentSection !== section) {
+                const sectionTitle = document.createElement('h3');
+                sectionTitle.className = 'section-title';
+                sectionTitle.innerText = section;
+                container.appendChild(sectionTitle);
+                currentSection = section;
+            }
+
+            // 기존에 저장된 데이터 확인
             const saved = JSON.parse(localStorage.getItem(team.id)) || {};
 
             const card = document.createElement('div');
@@ -66,12 +97,14 @@
                 
                 <label>호위 효과 (Convoy Effect)</label>
                 <select id="convoy-${team.id}">
+                    <option value="" ${!saved.convoy ? 'selected' : ''}>선택안함</option>
                     <option value="No" ${saved.convoy === 'No' ? 'selected' : ''}>No</option>
                     <option value="Yes" ${saved.convoy === 'Yes' ? 'selected' : ''}>Yes</option>
                 </select>
                 
                 <label>반응 레이턴시</label>
                 <select id="latency-${team.id}">
+                    <option value="" ${!saved.latency ? 'selected' : ''}>선택안함</option>
                     <option value="바로신남" ${saved.latency === '바로신남' ? 'selected' : ''}>바로신남</option>
                     <option value="1~2분뒤" ${saved.latency === '1~2분뒤' ? 'selected' : ''}>1~2분뒤</option>
                     <option value="조용함" ${saved.latency === '조용함' ? 'selected' : ''}>조용함</option>
@@ -84,7 +117,7 @@
             container.appendChild(card);
         });
 
-        // 개별 팀 데이터 LocalStorage에 임시 저장 (새로고침해도 안 날아감)
+        // 개별 팀 데이터 LocalStorage에 임시 저장
         function saveTeam(id, name) {
             const overheadCheckboxes = document.querySelectorAll(`.overhead-${id}:checked`);
             const overhead = Array.from(overheadCheckboxes).map(cb => cb.value);
@@ -100,10 +133,20 @@
             };
 
             localStorage.setItem(id, JSON.stringify(data));
-            alert(`${name} 데이터가 브라우저에 임시 저장되었습니다.`);
+            
+            // 시각적 피드백
+            const saveBtn = document.querySelector(`#start-${id}`).parentElement.querySelector('.btn-save');
+            const originalText = saveBtn.innerText;
+            saveBtn.innerText = "✅ 저장 완료!";
+            saveBtn.style.backgroundColor = "#ff9800";
+            
+            setTimeout(() => {
+                saveBtn.innerText = originalText;
+                saveBtn.style.backgroundColor = "#4CAF50";
+            }, 1500);
         }
 
-        // 전체 데이터를 모아서 JSON 및 CSV(엑셀 변환용)로 다운로드
+        // 전체 데이터를 모아서 JSON 및 CSV로 다운로드
         function downloadData() {
             const allData = [];
             teams.forEach(team => {
