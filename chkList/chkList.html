@@ -184,7 +184,7 @@
                 <input type="time" id="end-${team.id}" value="${saved.endTime || ''}" oninput="handleTimeInput('${team.id}')">
                 
                 <label>대기 시간 (분)</label>
-                <input type="number" id="wait-${team.id}" placeholder="자동 계산됨 (수정 가능)" value="${saved.waitTime || ''}">
+                <input type="number" id="wait-${team.id}" placeholder="자동 계산됨 (수정 가능)" value="${saved.waitTime || '0'}">
                 
                 <label>오버헤드 원인</label>
                 <div class="checkbox-group">
