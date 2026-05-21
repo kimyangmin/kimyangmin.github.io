@@ -87,6 +87,18 @@
             font-size: 15px; 
             margin-bottom: 20px; 
         }
+        .btn-reset {
+            background: transparent;
+            color: #d32f2f;
+            border: 1px solid #d32f2f;
+            padding: 15px;
+            font-size: 15px;
+            margin-top: 15px;
+            margin-bottom: 40px;
+        }
+        .btn-reset:active {
+            background: #ffebee;
+        }
         .checkbox-group { 
             display: grid; 
             grid-template-columns: 1fr 1fr; 
@@ -114,8 +126,10 @@
 
     <div id="stage-list"></div>
 
+    <button class="btn-reset" onclick="clearData()">데이터 초기화</button>
+
     <script>
-        // 전반전 및 후반전 총 20팀 리스트 (이모지 및 앞번호 제거)
+        // 전반전 및 후반전 총 20팀 리스트
         const teams = [
             // 전반전
             { id: "1-1", name: "미라클 나인(성일고)" },
@@ -147,7 +161,6 @@
         let currentSection = "";
 
         teams.forEach(team => {
-            // ID를 기준으로 전반/후반 구분
             const section = team.id.startsWith("1-") ? "전반전" : "후반전";
             if (currentSection !== section) {
                 const sectionTitle = document.createElement('div');
@@ -219,7 +232,6 @@
 
             localStorage.setItem(id, JSON.stringify(data));
 
-            // 심플한 저장 완료 피드백 (이모지 없이 텍스트와 배경색만 변경)
             const saveBtn = document.querySelector(`#start-${id}`).parentElement.querySelector('.btn-save');
             const originalText = saveBtn.innerText;
             saveBtn.innerText = "저장 완료!";
@@ -270,6 +282,18 @@
             document.body.appendChild(csvAnchor);
             csvAnchor.click();
             csvAnchor.remove();
+        }
+
+        // 데이터 초기화 기능
+        function clearData() {
+            if (confirm("정말 모든 데이터를 초기화하시겠습니까?\n이 작업은 되돌릴 수 없습니다.")) {
+                // 팀 ID에 해당하는 데이터만 삭제 (다른 로컬스토리지 데이터 보호)
+                teams.forEach(team => {
+                    localStorage.removeItem(team.id);
+                });
+                alert("데이터가 완전히 초기화되었습니다.");
+                location.reload(); // 화면 새로고침하여 빈 칸으로 복구
+            }
         }
     </script>
 </body>
