@@ -5,52 +5,140 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>축제 스케줄러 OS 모니터</title>
     <style>
-        body { font-family: sans-serif; padding: 15px; background: #f5f5f5; }
-        .card { background: white; padding: 15px; margin-bottom: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        h3 { margin-top: 0; color: #333; font-size: 16px; }
-        .section-title { background: #3f51b5; color: white; padding: 10px; border-radius: 4px; text-align: center; margin: 20px 0 10px 0; }
-        label { display: block; margin: 8px 0 4px; font-weight: bold; font-size: 14px; }
-        input, select { width: 100%; padding: 8px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; }
-        .btn-group { margin-top: 15px; display: flex; gap: 10px; }
-        button { flex: 1; padding: 10px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; }
-        .btn-save { background: #4CAF50; color: white; }
-        .btn-download { background: #2196F3; color: white; padding: 15px; font-size: 16px; width: 100%; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.2); }
-        .checkbox-group { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
-        .checkbox-group label { font-weight: normal; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+            padding: 15px; 
+            background: #f9f9f9; 
+            color: #222;
+            margin: 0;
+        }
+        h2 { 
+            text-align: center; 
+            font-size: 20px; 
+            font-weight: 700; 
+            margin: 10px 0 20px 0; 
+        }
+        .card { 
+            background: white; 
+            padding: 18px; 
+            margin-bottom: 12px; 
+            border: 1px solid #e0e0e0; 
+            border-radius: 6px; 
+        }
+        h3 { 
+            margin-top: 0; 
+            color: #000; 
+            font-size: 16px; 
+            border-bottom: 1px solid #f0f0f0; 
+            padding-bottom: 10px; 
+            margin-bottom: 15px;
+        }
+        .section-title { 
+            background: #e8e8e8; 
+            color: #333; 
+            padding: 10px; 
+            border-radius: 4px; 
+            text-align: center; 
+            margin: 25px 0 15px 0; 
+            font-size: 15px; 
+            font-weight: 700; 
+        }
+        label { 
+            display: block; 
+            margin: 12px 0 6px; 
+            font-weight: 600; 
+            font-size: 13px; 
+            color: #555; 
+        }
+        input[type="time"], input[type="number"], select { 
+            width: 100%; 
+            padding: 10px; 
+            box-sizing: border-box; 
+            border: 1px solid #ccc; 
+            border-radius: 4px; 
+            font-size: 14px;
+            background-color: #fff;
+        }
+        .btn-group { 
+            margin-top: 20px; 
+            display: flex; 
+        }
+        button { 
+            width: 100%; 
+            padding: 12px; 
+            border: none; 
+            border-radius: 4px; 
+            font-weight: 600; 
+            font-size: 14px;
+            cursor: pointer; 
+            transition: background-color 0.2s, color 0.2s;
+        }
+        .btn-save { 
+            background: #333; 
+            color: white; 
+        }
+        .btn-save:active {
+            background: #555;
+        }
+        .btn-download { 
+            background: #111; 
+            color: white; 
+            padding: 15px; 
+            font-size: 15px; 
+            margin-bottom: 20px; 
+        }
+        .checkbox-group { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 10px; 
+            margin-top: 5px; 
+        }
+        .checkbox-group label { 
+            font-weight: 400; 
+            margin: 0; 
+            display: flex; 
+            align-items: center; 
+            font-size: 14px;
+            color: #222;
+        }
+        .checkbox-group input { 
+            width: auto; 
+            margin-right: 8px; 
+        }
     </style>
 </head>
 <body>
 
-    <h2>🏫 축제 성능 분석 시스템</h2>
-    <button class="btn-download" onclick="downloadData()">📊 데이터 다운로드 (JSON/CSV)</button>
+    <h2>축제 성능 분석 시스템</h2>
+    <button class="btn-download" onclick="downloadData()">데이터 다운로드 (JSON/CSV)</button>
 
     <div id="stage-list"></div>
 
     <script>
-        // 전반전 및 후반전 총 20팀 리스트 (요청하신 텍스트 완벽 반영)
+        // 전반전 및 후반전 총 20팀 리스트 (이모지 및 앞번호 제거)
         const teams = [
             // 전반전
-            { id: "1-1", name: "전반 1. 미라클 나인(성일고)" },
-            { id: "1-2", name: "전반 2. EDEN(성일정보고)" },
-            { id: "1-3", name: "전반 3. 악마의 래핑(성일고)" },
-            { id: "1-4", name: "전반 4. 창마과 트와이스(성일정보고)" },
-            { id: "1-5", name: "전반 5. 오진대(성일정보고)" },
-            { id: "1-6", name: "전반 6. 섹시킹 프미나(성일고)" },
-            { id: "1-7", name: "전반 7. 진리 정의 애국(성일고)" },
-            { id: "1-8", name: "전반 8. SPR 홍보동아리(성일정보고)" },
-            { id: "1-9", name: "전반 9. DREAM(성일정보고)" },
-            { id: "1-10", name: "전반 10. 야르티스(성일고)" },
+            { id: "1-1", name: "미라클 나인(성일고)" },
+            { id: "1-2", name: "EDEN(성일정보고)" },
+            { id: "1-3", name: "악마의 래핑(성일고)" },
+            { id: "1-4", name: "창마과 트와이스(성일정보고)" },
+            { id: "1-5", name: "오진대(성일정보고)" },
+            { id: "1-6", name: "섹시킹 프미나(성일고)" },
+            { id: "1-7", name: "진리 정의 애국(성일고)" },
+            { id: "1-8", name: "SPR 홍보동아리(성일정보고)" },
+            { id: "1-9", name: "DREAM(성일정보고)" },
+            { id: "1-10", name: "야르티스(성일고)" },
             // 후반전
-            { id: "2-1", name: "후반 1. ZEST(성일정보고)" },
-            { id: "2-2", name: "후반 2. OKASHII(성일정보고)" },
-            { id: "2-3", name: "후반 3. 야차(성일고)" },
-            { id: "2-4", name: "후반 4. 우리집 정수기(성일정보고)" },
-            { id: "2-5", name: "후반 5. 잘못된 만남(성일고&성일정보고)" },
-            { id: "2-6", name: "후반 6. 트리케라톱스(성일고)" },
-            { id: "2-7", name: "후반 7. 스몰 뱅(성일고)" },
-            { id: "2-8", name: "후반 8. 회계 사이에 피어난 금융(성일정보고)" },
-            { id: "2-9", name: "후반 9. LET ME DANCE(LMD)(성일정보고)" },
-            { id: "2-10", name: "후반 10. 찬조팀(외부)" }
+            { id: "2-1", name: "ZEST(성일정보고)" },
+            { id: "2-2", name: "OKASHII(성일정보고)" },
+            { id: "2-3", name: "야차(성일고)" },
+            { id: "2-4", name: "우리집 정수기(성일정보고)" },
+            { id: "2-5", name: "잘못된 만남(성일고&성일정보고)" },
+            { id: "2-6", name: "트리케라톱스(성일고)" },
+            { id: "2-7", name: "스몰 뱅(성일고)" },
+            { id: "2-8", name: "회계 사이에 피어난 금융(성일정보고)" },
+            { id: "2-9", name: "LET ME DANCE(LMD)(성일정보고)" },
+            { id: "2-10", name: "찬조팀(외부)" }
         ];
 
         // UI 생성
@@ -59,9 +147,10 @@
         let currentSection = "";
 
         teams.forEach(team => {
-            const section = team.name.includes("전반") ? "⚽ 전반전" : "⚽ 후반전";
+            // ID를 기준으로 전반/후반 구분
+            const section = team.id.startsWith("1-") ? "전반전" : "후반전";
             if (currentSection !== section) {
-                const sectionTitle = document.createElement('h3');
+                const sectionTitle = document.createElement('div');
                 sectionTitle.className = 'section-title';
                 sectionTitle.innerText = section;
                 container.appendChild(sectionTitle);
@@ -108,7 +197,7 @@
                 </select>
                 
                 <div class="btn-group">
-                    <button class="btn-save" onclick="saveTeam('${team.id}', '${team.name}')">💾 이 팀 저장</button>
+                    <button class="btn-save" onclick="saveTeam('${team.id}', '${team.name}')">저장</button>
                 </div>
             `;
             container.appendChild(card);
@@ -130,14 +219,17 @@
 
             localStorage.setItem(id, JSON.stringify(data));
 
+            // 심플한 저장 완료 피드백 (이모지 없이 텍스트와 배경색만 변경)
             const saveBtn = document.querySelector(`#start-${id}`).parentElement.querySelector('.btn-save');
             const originalText = saveBtn.innerText;
-            saveBtn.innerText = "✅ 저장 완료!";
-            saveBtn.style.backgroundColor = "#ff9800";
+            saveBtn.innerText = "저장 완료!";
+            saveBtn.style.backgroundColor = "#4caf50";
+            saveBtn.style.color = "white";
 
             setTimeout(() => {
                 saveBtn.innerText = originalText;
-                saveBtn.style.backgroundColor = "#4CAF50";
+                saveBtn.style.backgroundColor = "";
+                saveBtn.style.color = "";
             }, 1500);
         }
 
